@@ -21,6 +21,8 @@ app.use(cors());
 const taskRouter = require('./routes/task-route');
 app.use('/api/tasks', taskRouter);
 
+const userRouter = require('./routes/user');
+app.use('/api/auth', userRouter);
 
 app.all('*', (req, res, next) => {
     res.status(404).json({

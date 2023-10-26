@@ -1,5 +1,4 @@
 <!-- todolist with api https://todolist-8ins.onrender.com -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,18 +10,41 @@
     
     <div class="data"></div>
 
+    <form action="">
+        <input type="text" name="title" id="title">
+        <input type="submit" value="submit">
+    </form>
+
     <script>
         const data = document.querySelector('.data');
 
         fetch('https://todolist-8ins.onrender.com/api/tasks')
         .then(response => response.json())
         .then(json => {
-            json.forEach(element => {
-                data.innerHTML += `
-                    <p>${element.title}</p>
-                `;
-            });
+            const tasks = json.data.tasks;
+            console.log(tasks);
         });
-    </script>
+
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const titleInput = document.querySelector('#title').value;
+            if(titleInput === ''){
+                return;
+            }
+            await fetch('https://todolist-8ins.onrender.com/api/tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: titleInput
+                })
+            })
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+            })
+        })
+        </script>
 </body>
 </html>
