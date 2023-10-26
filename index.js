@@ -3,11 +3,20 @@ const mongoose = require('mongoose');
 const { FAIL } = require('./utils/httpStatusText');
 require('dotenv').config();
 
+
+
 const url = process.env.DB_URL;
 mongoose.connect(url);
 
 const app = express();
 app.use(express.json());
+
+
+app.use(express.static('public'));
+
+// Cors
+const cors = require('cors');
+app.use(cors());
 
 const taskRouter = require('./routes/task-route');
 app.use('/api/tasks', taskRouter);
