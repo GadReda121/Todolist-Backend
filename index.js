@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { FAIL } = require('./utils/httpStatusText');
 require('dotenv').config();
 
 const url = process.env.DB_URL;
@@ -14,7 +15,7 @@ app.use('/api/tasks', taskRouter);
 
 app.all('*', (req, res, next) => {
     res.status(404).json({
-        status: 'fail',
+        status: FAIL,
         message: `Can't find ${req.originalUrl}`
     });
 })

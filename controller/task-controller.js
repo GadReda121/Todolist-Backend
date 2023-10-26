@@ -1,12 +1,11 @@
-const Task = require("../models/task-model")
+const Task = require("../models/task-model");
+const status = require('../utils/httpStatusText');
 
 const getAllTasks = async (req, res) => {
     try {
-
         const tasks = await Task.find({},{'__v': false});
-
         res.status(200).json({
-            status: 'success',
+            status: status.SUCCESS,
             results: tasks.length,
             data:{
                 tasks
@@ -14,7 +13,7 @@ const getAllTasks = async (req, res) => {
         });
     } catch(e){
         res.status(500).json({
-            status: 'fail',
+            status: status.FAIL,
             message: e.message
         });
     }
@@ -24,7 +23,7 @@ const addTask = async (req, res) => {
     try{
         const newTask = await Task.create(req.body);
         res.status(201).json({
-            status: 'success',
+            status: status.SUCCESS,
             data: {
                 task: newTask
             }
@@ -32,7 +31,7 @@ const addTask = async (req, res) => {
     }
     catch(e){
         res.status(500).json({
-            status: 'fail',
+            status: status.FAIL,
             message: e.message
         });
     }
@@ -42,7 +41,7 @@ const updateTask = async (req, res) => {
     try{
         const newTask = await Task.findByIdAndUpdate(req.params.id, req.body);
         res.status(200).json({
-            status: 'success',
+            status: status.SUCCESS,
             data: {
                 task: newTask
             }
@@ -50,7 +49,7 @@ const updateTask = async (req, res) => {
 
     }catch(e){
         res.status(500).json({
-            status: 'fail',
+            status: status.FAIL,
             message: e.message
         });
     }
@@ -60,13 +59,13 @@ const deleteTask = async (req, res) => {
     try{
         const newTask = await Task.findByIdAndDelete(req.params.id);
         res.status(200).json({
-            status: 'success',
+            status: status.SUCCESS,
             data: null
         });
 
     }catch(e){
         res.status(500).json({
-            status: 'fail',
+            status: status.FAIL,
             message: e.message
         });
     }
