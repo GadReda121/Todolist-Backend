@@ -26,7 +26,6 @@ const getAllTasks = async (req, res) => {
 const getSingleTask = async (req, res) => {
     try{
         const task = await Task.findById(req.params.id);
-        console.log(task);
         res.status(200).json({
             status: status.SUCCESS,
             data: {
