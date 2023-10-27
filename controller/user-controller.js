@@ -101,8 +101,27 @@ const login = async (req, res) => {
     }
 }
 
+const getProfile = async (req, res) => {
+    try{
+        const user = await User.findById(req.currentUser.id);
+        res.status(200).json({
+            status: status.SUCCESS,
+            data: {
+                user
+            }
+        });
+    }catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
+
+
 module.exports = {
     getAllUsers,
     register,
-    login
+    login,
+    getProfile
 }
