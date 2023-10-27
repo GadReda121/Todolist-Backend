@@ -3,7 +3,8 @@ const status = require('../utils/httpStatusText');
 
 const getAllTasks = async (req, res) => {
     try {
-        const tasks = await Task.find({},{'__v': false});
+        const userId = req.currentUser.id;
+        const tasks = await Task.find({ user: userId });
         res.status(200).json({
             status: status.SUCCESS,
             results: tasks.length,
@@ -21,7 +22,14 @@ const getAllTasks = async (req, res) => {
 
 const addTask = async (req, res) => {
     try{
-        const newTask = await Task.create(req.body);
+        const {title, completed} = req.body;
+        const userId = req.currentUser.id;
+
+        const newTask = await Task.create({
+            title,
+            completed,
+            user: userId
+        });
         res.status(201).json({
             status: status.SUCCESS,
             data: {

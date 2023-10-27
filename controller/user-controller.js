@@ -3,6 +3,24 @@ const generateJWT = require("../utils/generateJWT");
 const status = require('../utils/httpStatusText');
 const bcrypt = require('bcryptjs');
 
+
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).json({
+            status: status.SUCCESS,
+            results: users.length,
+            data:{
+                users
+            }
+        });
+    } catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
 const register = async (req, res) => {
     try{
         const {name, email, password} = req.body;
@@ -77,6 +95,7 @@ const login = async (req, res) => {
 }
 
 module.exports = {
+    getAllUsers,
     register,
     login
 }
