@@ -1,10 +1,12 @@
 const Task = require("../models/task-model");
+const User = require("../models/user");
 const status = require('../utils/httpStatusText');
 
 const getAllTasks = async (req, res) => {
     try {
         const userId = req.currentUser.id;
         const tasks = await Task.find({ user: userId });
+        
         res.status(200).json({
             status: status.SUCCESS,
             results: tasks.length,
@@ -30,6 +32,7 @@ const addTask = async (req, res) => {
             completed,
             user: userId
         });
+
         res.status(201).json({
             status: status.SUCCESS,
             data: {

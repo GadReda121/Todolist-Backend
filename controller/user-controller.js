@@ -1,3 +1,4 @@
+const Task = require("../models/task-model");
 const User = require("../models/user");
 const generateJWT = require("../utils/generateJWT");
 const status = require('../utils/httpStatusText');
@@ -73,6 +74,7 @@ const login = async (req, res) => {
         }
 
         if(user && isMatched){
+            user.tasks = await Task.find({user: user._id});
             const token = await generateJWT({
                 id: user._id,
                 email: user.email

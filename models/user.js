@@ -23,10 +23,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
-    tasks: [{
-        type: mongoose.Schema.Types.ObjectId,
+    tasks: {
+        type: mongoose.Schema.Types.Array,
         ref: 'Task'
-    }],
+    },
     token:{
         type: String
     }
