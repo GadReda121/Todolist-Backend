@@ -24,17 +24,19 @@ const getAllUsers = async (req, res) => {
 }
 const register = async (req, res) => {
     try{
-        const {name, email, password} = req.body;
+        const {name, email, password, role} = req.body;
         const passwordHashed = await bcrypt.hash(password, 10)
         const newUser = await User.create({
             name,
             email,
-            password: passwordHashed
+            password: passwordHashed,
+            role 
         });
 
         const token = await generateJWT({
             id: newUser._id,
-            email: newUser.email
+            email: newUser.email,
+            role: newUser.role
         });
 
         newUser.token = token;
@@ -77,8 +79,11 @@ const login = async (req, res) => {
             user.tasks = await Task.find({user: user._id});
             const token = await generateJWT({
                 id: user._id,
-                email: user.email
+                email: user.email,
+                role: user.role
             });
+
+            req.currentUser = user.role;
 
             res.status(200).json({
                 status: status.SUCCESS,
