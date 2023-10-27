@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllTasks, addTask, updateTask, deleteTask } = require('../controller/task-controller');
+const { getAllTasks, addTask, getSingleTask, updateTask, deleteTask } = require('../controller/task-controller');
 const verifyToken = require('../middleware/verifyToken');
 
 const router = express.Router();
@@ -10,6 +10,7 @@ router.route('/')
 
 
 router.route('/:id')
+        .get(verifyToken, getSingleTask)
         .patch(verifyToken, updateTask)
         .delete(verifyToken, deleteTask)
         

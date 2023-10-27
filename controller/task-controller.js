@@ -22,6 +22,27 @@ const getAllTasks = async (req, res) => {
     }
 }
 
+
+const getSingleTask = async (req, res) => {
+    try{
+        const task = await Task.findById(req.params.id);
+        console.log(task);
+        res.status(200).json({
+            status: status.SUCCESS,
+            data: {
+                task
+            }
+        });
+
+    }catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
+
+
 const addTask = async (req, res) => {
     try{
         const {title, completed} = req.body;
@@ -68,7 +89,7 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
     try{
-        const newTask = await Task.findByIdAndDelete(req.params.id);
+        await Task.findByIdAndDelete(req.params.id);
         res.status(200).json({
             status: status.SUCCESS,
             data: null
@@ -84,6 +105,7 @@ const deleteTask = async (req, res) => {
 
 module.exports = {
     getAllTasks,
+    getSingleTask,
     addTask,
     updateTask,
     deleteTask
