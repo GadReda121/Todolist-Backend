@@ -4,7 +4,6 @@ const generateJWT = require("../utils/generateJWT");
 const status = require('../utils/httpStatusText');
 const bcrypt = require('bcryptjs');
 
-
 const getAllUsers = async (req, res) => {
     try {
         const users = await User.find();
@@ -104,6 +103,12 @@ const login = async (req, res) => {
 const getProfile = async (req, res) => {
     try{
         const user = await User.findById(req.currentUser.id);
+        if(!user){
+            res.status(404).json({
+                status: status.FAIL,
+                message: 'User not found'
+            });
+        }
         res.status(200).json({
             status: status.SUCCESS,
             data: {
@@ -119,9 +124,86 @@ const getProfile = async (req, res) => {
 }
 
 
+const updateUser = async (req, res) => {
+    try{
+        // Update user
+        const userId = req.currentUser.id;
+        const userData = req.body;
+
+        const updatedUser = await User.findByIdAndUpdate(userId, userData, {new: true});
+
+        if(!updatedUser){
+            res.status(404).json({
+                status: status.FAIL,
+                message: 'User not found'
+            });
+        }
+
+        res.status(200).json({
+            status: status.SUCCESS,
+            data: {
+                user: updatedUser
+            }
+        });
+
+    } catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
+
+
+const deleteUser = async (req, res) => {
+    try{
+        const userId = req.currentUser.id;
+        const deletedUser = await User.findByIdAndDelete(userId);
+
+        if(!deletedUser){
+            res.status(404).json({
+                status: status.FAIL,
+                message: 'User not found'
+            });
+        }
+
+        res.status(200).json({
+            status: status.SUCCESS,
+            data: {
+                user: deletedUser
+            }
+        });
+    } catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
+
+
+const signOut = async (req, res) => {
+    try{
+        res.cookie('JWT', '', { httpOnly: true, maxAge: 1 });
+        res.status(200).json({
+            status: status.SUCCESS,
+            message: 'Sign out successfully'
+        });
+    } catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
+
+
 module.exports = {
     getAllUsers,
     register,
     login,
-    getProfile
+    updateUser,
+    deleteUser,
+    getProfile,
+    signOut
 }
