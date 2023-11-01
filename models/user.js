@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
     name:{
@@ -18,6 +19,14 @@ const userSchema = new mongoose.Schema({
     },
     password:{
         type: String,
+    },
+    confirmPassword:{
+        type: String,
+        validate: function(value){
+            if(value !== this.password){
+                throw new Error('Password and confirm password are not the same');
+            }
+        }
     },
     date:{
         type: Date,

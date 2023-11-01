@@ -3,6 +3,9 @@ const User = require("../models/user");
 const generateJWT = require("../utils/generateJWT");
 const status = require('../utils/httpStatusText');
 const bcrypt = require('bcryptjs');
+const sendEmail = require('../utils/email');
+const crypto = require('crypto');
+const { nextTick } = require("process");
 
 const getAllUsers = async (req, res) => {
     try {
@@ -39,6 +42,8 @@ const register = async (req, res) => {
         });
 
         newUser.token = token;
+
+        res.cookie("JWT", token, { httpOnly: true });
 
         res.status(201).json({
             status: status.SUCCESS,
@@ -84,6 +89,12 @@ const login = async (req, res) => {
 
             req.currentUser = user.role;
 
+            res.cookie("JWT", token, {
+                httpOnly: false,
+                sameSite: "None",
+                secure: true,
+            });
+
             res.status(200).json({
                 status: status.SUCCESS,
                 data: {
@@ -99,6 +110,58 @@ const login = async (req, res) => {
         });
     }
 }
+
+
+const forgetPassword = async (req, res) => {
+    try{
+        // 1 - Get user based on POSTed email
+        const { email } = req.body;
+        const user = await User.findOne({email});
+        if(!user){
+            res.status(404).json({
+                status: status.FAIL,
+                message: 'User not found'
+            });
+        }
+
+        //  2 - Generate the random reset token
+        // const resetToken = user.createPasswordResetToken();
+        await user.save({validateBeforeSave: false});
+
+        // 3 - Send it to user's email
+        const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${user._id}`;
+        const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetUrl}.\nIf you didn't forget your password, please ignore this email!`;
+
+        try{
+            await sendEmail({
+                email: user.email,
+                subject: 'Your password reset token (valid for 10 min)',
+                message
+            });
+            res.status(200).json({
+                status: status.SUCCESS,
+                message: 'Token sent to email!',
+                link: resetUrl
+            });
+        }
+        catch(e){
+            user.passwordResetToken = undefined;
+            user.passwordResetTokenExpires = undefined;
+            await user.save({validateBeforeSave: false});
+
+            res.status(500).json({
+                status: status.FAIL,
+                message: e
+            });
+        }
+    } catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
+
 
 const getProfile = async (req, res) => {
     try{
@@ -184,7 +247,7 @@ const deleteUser = async (req, res) => {
 
 const signOut = async (req, res) => {
     try{
-        res.cookie('JWT', '', { httpOnly: true, maxAge: 1 });
+        res.cookie('JWT', '', { httpOnly: true });
         res.status(200).json({
             status: status.SUCCESS,
             message: 'Sign out successfully'
@@ -202,6 +265,7 @@ module.exports = {
     getAllUsers,
     register,
     login,
+    forgetPassword,
     updateUser,
     deleteUser,
     getProfile,

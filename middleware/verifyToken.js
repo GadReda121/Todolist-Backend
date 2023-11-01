@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
 
     try {
         const currentUser = jwt.verify(token, process.env.JWT_SECRET);
-        req.currentUser = currentUser;
+       req.currentUser = currentUser; 
         next(); 
     } catch(err) {
         return res.status(401).json({ status: status.FAIL, data: { msg : 'Invalid Token' } });

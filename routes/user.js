@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getAllUsers, getProfile, updateUser, deleteUser, signOut } = require('../controller/user-controller');
+const { register, login, getAllUsers, getProfile, updateUser, deleteUser, signOut, forgetPassword } = require('../controller/user-controller');
 const allowedTo = require('../middleware/allowedTo');
 const { ADMIN } = require('../utils/user_status');
 const verifyToken = require('../middleware/verifyToken');
@@ -18,6 +18,9 @@ router.route('/register')
 
 router.route('/login')
         .post(login);
+
+router.route('/forgetPassword')
+        .post(forgetPassword);
 
 router.route('/signOut')
         .get(verifyToken, signOut);
