@@ -4,8 +4,7 @@ const generateJWT = require("../utils/generateJWT");
 const status = require('../utils/httpStatusText');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/email');
-const crypto = require('crypto');
-const { nextTick } = require("process");
+const jwt = require('jsonwebtoken');
 
 const getAllUsers = async (req, res) => {
     try {
@@ -124,12 +123,11 @@ const forgetPassword = async (req, res) => {
             });
         }
 
-        //  2 - Generate the random reset token
-        // const resetToken = user.createPasswordResetToken();
-        await user.save({validateBeforeSave: false});
+        // 2 - Generate the random reset token
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '10m'});
 
         // 3 - Send it to user's email
-        const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${user._id}`;
+        const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${token}`;
         const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetUrl}.\nIf you didn't forget your password, please ignore this email!`;
 
         try{
@@ -143,15 +141,69 @@ const forgetPassword = async (req, res) => {
                 message: 'Token sent to email!',
                 link: resetUrl
             });
+
+            return user.updateOne({resetLink: token}, (err, success) => {
+                if(err){
+                    res.status(400).json({
+                        status: status.FAIL,
+                        message: 'Reset password link error'
+                    });
+                } else{
+                    res.status(200).json({
+                        status: status.SUCCESS,
+                        message: 'Reset password link sent successfully'
+                    });
+                }
+            }); 
+
         }
         catch(e){
-            user.passwordResetToken = undefined;
-            user.passwordResetTokenExpires = undefined;
-            await user.save({validateBeforeSave: false});
-
             res.status(500).json({
                 status: status.FAIL,
                 message: e
+            });
+        }
+    } catch(e){
+        res.status(500).json({
+            status: status.FAIL,
+            message: e.message
+        });
+    }
+}
+
+
+const resetPassword = async (req, res) => {
+    try{
+        const { newPassword } = req.body;
+        const resetLink = req.params.token;
+
+        if(resetLink){
+            jwt.verify(resetLink, process.env.JWT_SECRET, async (err, decodedData) => {
+                if(err){
+                    res.status(401).json({
+                        status: status.FAIL,
+                        message: 'Token expired'
+                    });
+                } else{
+                    const user = await User.findOne({resetLink});
+                    if(!user){
+                        res.status(404).json({
+                            status: status.FAIL,
+                            message: 'User not found'
+                        });
+                    }
+
+                    const passwordHashed = await bcrypt.hash(newPassword, 10);
+                    user.password = passwordHashed;
+                    user.resetLink = '';
+
+                    await user.save();
+
+                    res.status(200).json({
+                        status: status.SUCCESS,
+                        message: 'Password changed successfully'
+                    });
+                }
             });
         }
     } catch(e){
@@ -266,6 +318,7 @@ module.exports = {
     register,
     login,
     forgetPassword,
+    resetPassword,
     updateUser,
     deleteUser,
     getProfile,
