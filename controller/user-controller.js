@@ -127,7 +127,7 @@ const forgetPassword = async (req, res) => {
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '10m'});
 
         // 3 - Send it to user's email
-        const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${token}`;
+        const resetUrl = `${process.env.CLIENT_URL}/resetPassword?token=${token}`;
         const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetUrl}.\nIf you didn't forget your password, please ignore this email!`;
 
         try{
